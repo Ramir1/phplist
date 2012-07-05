@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__FILE__).'/accesscheck.php';
+require_once dirname(__FILE__).'/plugins/pbts_xtra/pbts_xtra.inc.php';
 
 # send an email library
 
@@ -225,11 +226,13 @@ function sendEmail ($messageid,$email,$hash,$htmlpref = 0,$rssitems = array(),$f
 
   $defaultstyle = getConfig("html_email_style");
   $adddefaultstyle = 0;
-
-  if ($cached[$messageid]["template"])
+  if ($cached[$messageid]["template"]){
     # template used
-    $htmlmessage = eregi_replace("\[CONTENT\]",$htmlcontent,$cached[$messageid]["template"]);
-  else {
+    if (!preg_match("/\[PBTS_/is", $cached[$messageid]["template"]))
+      $htmlmessage = eregi_replace("\[CONTENT\]", $htmlcontent, $cached[$messageid]["template"]);
+    else
+      $htmlmessage = pbts_replace_content( $htmlcontent, $cached[$messageid]["template"] );
+  } else {
     # no template used
     $htmlmessage = $htmlcontent;
     $adddefaultstyle = 1;

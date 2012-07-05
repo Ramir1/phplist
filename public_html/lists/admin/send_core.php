@@ -1,6 +1,7 @@
 <?php
 // 2004-1-7  This function really isn't quite ready for register globals.
 require_once dirname(__FILE__).'/accesscheck.php';
+require_once dirname(__FILE__).'/plugins/pbts_xtra/pbts_xtra.inc.php';
 
 #initialisation###############
 
@@ -314,6 +315,11 @@ if ($send || $sendtest || $prepare || $save) {
 
   if (!$htmlformatted  && strip_tags($_POST["message"]) !=  $_POST["message"])
     $errormsg = '<span  class="error">'.$GLOBALS['I18N']->get("htmlusedwarning").'</span>';
+
+  # Add PBTS processing to save:
+  if (isset($_POST['pbts_xtra']))
+    $_POST["message"]= pbts_send_core_save();
+  # done adding PBTS lines.
 
   $query = sprintf('update %s  set  '.
       'subject = "%s", '.
@@ -1226,8 +1232,11 @@ if (!$done) {
         ."</script>\n"
         ."<textarea name='message' id='message' cols='65' rows='20'>{$_POST['message']}</textarea>";
         
+
   } else {
-    $maincontent    .= '<textarea name=message cols=65 rows=20>'.htmlspecialchars($_POST["message"]).'</textarea>';
+    # let PBTS emit the form fields based on the Template tags:
+    $maincontent .= pbts_send_core_editor();
+    # end, PBTS
   }
 
   #0013076: different content when forwarding 'to a friend'
